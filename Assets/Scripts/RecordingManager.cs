@@ -12,10 +12,12 @@ public class RecordingManager : MonoBehaviour
     public int ActivePlayerNumber = 0;
     public bool PlayerIsActive = false;
     public bool RecordedPlayerIsActive = false;
+    public float RecordInterval = 0.02f;
 
     private string SaveLocation = "";
     private GameObject Player;
     public List<GameObject> RecordedPlayers = new List<GameObject>();
+    private GameObject PlayerIconParent;
     public List<GameObject> PlayerIcons = new List<GameObject>();
 
     private void Awake()
@@ -49,6 +51,7 @@ public class RecordingManager : MonoBehaviour
         Player.name = "Player";
         Player.GetComponent<RecordMovement>().LevelNumber = LevelNumber;
         Player.GetComponent<RecordMovement>().PlayerNumber = ActivePlayerNumber;
+        Player.GetComponent<RecordMovement>().RecordInterval = RecordInterval;
         Player.GetComponent<RecordMovement>().SaveLocation = SaveLocation;
     }
 
@@ -58,10 +61,11 @@ public class RecordingManager : MonoBehaviour
         {
             GameObject playerRecorded = (GameObject)GameObject.Instantiate(Resources.Load("PlayerRecorded"), new Vector2(-5.6f, -0.51f), Quaternion.identity);
             playerRecorded.name = "PlayerRecorded" + playerNumber;
-            playerRecorded.GetComponent<Player_Movement>().LevelNumber = LevelNumber;
-            playerRecorded.GetComponent<Player_Movement>().PlayerNumber = playerNumber;
+            playerRecorded.GetComponent<ReplayMovement>().LevelNumber = LevelNumber;
+            playerRecorded.GetComponent<ReplayMovement>().PlayerNumber = playerNumber;
+            playerRecorded.GetComponent<ReplayMovement>().RecordInterval = RecordInterval;
 
-            LoadFile(SaveLocation + "/Level" + LevelNumber + "-" + "Player" + playerNumber + ".dat", playerRecorded.GetComponent<Player_Movement>());
+            LoadFile(SaveLocation + "/Level" + LevelNumber + "-" + "Player" + playerNumber + ".dat", playerRecorded.GetComponent<ReplayMovement>());
 
             RecordedPlayers[playerNumber] = playerRecorded;
         }
@@ -97,7 +101,7 @@ public class RecordingManager : MonoBehaviour
         {
             if (recordedPlayer != null)
             {
-                recordedPlayer.GetComponent<Player_Movement>().Reset();
+                recordedPlayer.GetComponent<ReplayMovement>().Reset();
             }
         }
     }
@@ -187,8 +191,7 @@ public class RecordingManager : MonoBehaviour
         {
             if (recordedPlayer != null)
             {
-                recordedPlayer.GetComponent<Player_Movement>().Reset();
-                recordedPlayer.GetComponent<Player_Movement>().Play = true;
+                recordedPlayer.GetComponent<ReplayMovement>().Play = true;
                 RecordedPlayerIsActive = true;
             }
         }
@@ -201,7 +204,7 @@ public class RecordingManager : MonoBehaviour
         PlayerIsActive = false;
     }
 
-    private void LoadFile(string destination, Player_Movement rm)
+    private void LoadFile(string destination, ReplayMovement rm)
     {
         FileStream file;
         
@@ -211,10 +214,8 @@ public class RecordingManager : MonoBehaviour
         FrameData data = (FrameData)bf.Deserialize(file);
         file.Close();
 
-        rm.StartPosition = new Vector2(data.StartPositionX, data.StartPositionY);
-        rm.LastFrame = data.LastFrame;
-        rm.Horizontal = data.Horizontal;
-        rm.JumpBool = data.JumpBool;
+        rm.PositionsX = data.positionsX;
+        rm.PositionsY = data.positionsY;
     }
 
     private void DeleteFile(string destination)

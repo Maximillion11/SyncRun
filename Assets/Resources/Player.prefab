@@ -156,9 +156,9 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: 0
-  m_GravityScale: 3
-  m_Material: {fileID: 6200000, guid: d5c842e94301c4f45841f44da5c2bd54, type: 2}
+  m_AngularDrag: 0.05
+  m_GravityScale: 5
+  m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
@@ -175,21 +175,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06398dc736bae504ab1f2e2ab031ce80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerControlled: 1
   groundLayer:
     serializedVersion: 2
     m_Bits: 567
   walkSpeed: 10
-  accellSpeed: 100
-  stopSpeed: 200
-  airStopSpeed: 200
+  accellSpeed: 50
+  stopSpeed: 25
+  airStopSpeed: 5
   jumpForce: 11
-  isGroundedDelay: 0.05
-  LevelNumber: 0
-  PlayerNumber: 0
-  Play: 0
-  StartPosition: {x: 0, y: 0}
-  LastFrame: 0
 --- !u!114 &7261205291884775617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -204,4 +197,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   LevelNumber: 0
   PlayerNumber: 0
-  SaveLocation: 
+  RecordInterval: 0
