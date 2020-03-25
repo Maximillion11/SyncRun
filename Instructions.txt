@@ -1,0 +1,18 @@
+http://www.mediafire.com/file/m9lms8077zc9vkv/Build.zip/file
+
+Restart - Restarts from scratch
+Play - Lets you watch any recorded movement
+Stop - Stops and saves your active player AND stops any playing recordings
+
+Red square at top = player not recorded
+Green square at top = player with recording
+White square at top = active player
+
+Clicking on the squares at the top will remove any recording on that player, 
+give you control of that player and play any existing recorded players 
+so you can interact with them.
+
+A + D to move
+SPACE to jump and double jump
+
+Recorded data is saved in %UserProfile%\AppData\LocalLow\DefaultCompany\SyncRun\SavedData
