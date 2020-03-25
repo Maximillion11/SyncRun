@@ -8,50 +8,61 @@ public class RecordMovement : MonoBehaviour
 {
     public int LevelNumber = 0;
     public int PlayerNumber = 0;
-    public float RecordInterval = 0f;
     public string SaveLocation = "";
 
-    private float timer = 0;
+    private Vector2 startPosition = new Vector2();
+    private Dictionary<int, float> horizontal = new Dictionary<int, float>();
+    private Dictionary<int, bool> jumpBool = new Dictionary<int, bool>();
+    private int lastFrame = 0;
 
-
-    private List<float> positionsX = new List<float>();
-    private List<float> positionsY = new List<float>();
-
-    private RecordingManager rm;
+    private int frame = 0;
+    private float inputX = 0;
 
     private void Awake()
     {
-        rm = GameObject.Find("GameManager").transform.GetComponent<RecordingManager>();
+        startPosition = transform.position;
     }
 
     private void Update()
     {
-        if (timer >= RecordInterval)
+        float x = Input.GetAxisRaw("Horizontal");
+        if (x != inputX)
         {
-            RecordFrame();
+            RecordFrame("Horizontal", x.ToString());
+            inputX = x;
+        }
 
-            timer = 0;
-        }
-        else
+        bool jump = Input.GetButtonDown("Jump");
+        if (jump)
         {
-            timer += Time.deltaTime;
+            RecordFrame("Jump", jump.ToString());
         }
+
+        frame++;
     }
 
-    private void RecordFrame()
+    private void RecordFrame(string inputType, string inputValue)
     {
-        positionsX.Add(transform.position.x);
-        positionsY.Add(transform.position.y);
+        if (inputType == "Horizontal")
+        {
+            horizontal.Add(frame, int.Parse(inputValue));
+        }
+        if (inputType == "Jump")
+        {
+            jumpBool.Add(frame, bool.Parse(inputValue));
+        }
     }
 
     public void SaveFile()
     {
+        lastFrame = frame;
+
         string destination = SaveLocation + "/Level" + LevelNumber + "-" + "Player" + PlayerNumber + ".dat";
         FileStream file;
 
         file = File.Create(destination);
 
-        FrameData data = new FrameData(positionsX, positionsY);
+        FrameData data = new FrameData(startPosition.x, startPosition.y, lastFrame, horizontal, jumpBool);
         BinaryFormatter bf = new BinaryFormatter();
         bf.Serialize(file, data);
         file.Close();

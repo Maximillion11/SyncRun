@@ -1,10 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class Player_Movement : MonoBehaviour
 {
     private const int airJumpMax = 1;
+
+    public bool PlayerControlled = true;
 
     public LayerMask groundLayer;
 
@@ -28,6 +31,18 @@ public class Player_Movement : MonoBehaviour
     private Transform groundedParent;
     private int airJumpCount = airJumpMax;
 
+    public int LevelNumber = 0;
+    public int PlayerNumber = 0;
+    public bool Play = false;
+    public Vector2 StartPosition = new Vector2();
+    public Dictionary<int, float> Horizontal = new Dictionary<int, float>();
+    public Dictionary<int, bool> JumpBool = new Dictionary<int, bool>();
+    public int LastFrame = 0;
+    private int frame = 0;
+
+    float inputX = 0;
+    bool jumpBool = false;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -39,33 +54,81 @@ public class Player_Movement : MonoBehaviour
         CheckGrounded();
         if (groundedParent != transform.parent)
         {
-            if (transform.parent != null && transform.parent.GetComponent<ReplayMovement>() != null)
+            if (transform.parent != null && transform.parent.GetComponent<Player_Movement>() != null)
             {
-                rb.velocity += transform.parent.GetComponent<ReplayMovement>().kinematicVelocity;
+                rb.velocity += transform.parent.GetComponent<Rigidbody2D>().velocity;
             }
         }
         transform.parent = groundedParent;
-
         Movement();
     }
 
     private void Update()
     {
         JumpReset();
-        Jump();
+
+        if (PlayerControlled)
+        {
+            if (Input.GetButtonDown("Jump"))
+            {
+                Jump();
+            }
+        }
+        else
+        {
+            if (Play)
+            {
+                if (rb.bodyType == RigidbodyType2D.Kinematic)
+                {
+                    rb.bodyType = RigidbodyType2D.Dynamic;
+                }
+                if (Horizontal.ContainsKey(frame))
+                {
+                    inputX = Horizontal.Single(s => s.Key == frame).Value;
+                }
+
+                if (JumpBool.ContainsKey(frame))
+                {
+                    jumpBool = JumpBool.Single(s => s.Key == frame).Value;
+                }
+
+                if (jumpBool)
+                {
+                    Jump();
+                    jumpBool = false;
+                }
+
+                if (frame == LastFrame)
+                {
+                    Stop();
+                }
+                else
+                {
+                    frame++;
+                }
+            }
+        }
     }
 
     private void Movement()
     {
-        float inputX = Input.GetAxisRaw("Horizontal");
+        if (PlayerControlled)
+        {
+            inputX = Input.GetAxisRaw("Horizontal");
+        }
 
         float x = 0;
 
         //If movement key pressed
-        if (Mathf.Abs(inputX) > 0)
+        if (inputX != 0)
         {
+            //Change direction quicker
+            if (rb.velocity.x < 0 && inputX > 0 || rb.velocity.x > 0 && inputX < 0)
+            {
+                x = inputX * stopSpeed;
+            }
             //Limit x (velocity) to walkSpeed
-            if (rb.velocity.x < walkSpeed && inputX > 0 || rb.velocity.x > -walkSpeed && inputX < 0)
+            else if (rb.velocity.x < walkSpeed && inputX > 0 || rb.velocity.x > -walkSpeed && inputX < 0)
             {
                 x = inputX * accellSpeed;
             }
@@ -74,7 +137,7 @@ public class Player_Movement : MonoBehaviour
         else
         {
             //Aim x (velocity) to 0
-            if (Mathf.Abs(rb.velocity.x) >= 0.5f)
+            if (Mathf.Abs(rb.velocity.x) >= 10)
             {
                 float stopSpeedMod;
                 if (isGrounded)
@@ -94,6 +157,9 @@ public class Player_Movement : MonoBehaviour
                 {
                     x = stopSpeedMod;
                 }
+            } else
+            {
+                rb.velocity = new Vector2(0, rb.velocity.y);
             }
         }
 
@@ -103,20 +169,17 @@ public class Player_Movement : MonoBehaviour
 
     private void Jump()
     {
-        if (Input.GetButtonDown("Jump"))
-        {
-            Vector2 jumpVector = new Vector2(0, jumpForce);
+        Vector2 jumpVector = new Vector2(0, jumpForce);
 
-            if (isGrounded)
-            {
-                rb.AddForce(jumpVector, ForceMode2D.Impulse);
-            }
-            else if (!isGrounded && airJumpCount > 0)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, 0);
-                rb.AddForce(jumpVector, ForceMode2D.Impulse);
-                airJumpCount -= 1;
-            }
+        if (isGrounded)
+        {
+            rb.AddForce(jumpVector, ForceMode2D.Impulse);
+        }
+        else if (!isGrounded && airJumpCount > 0)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, 0);
+            rb.AddForce(jumpVector, ForceMode2D.Impulse);
+            airJumpCount -= 1;
         }
     }
 
@@ -150,5 +213,22 @@ public class Player_Movement : MonoBehaviour
     {
         yield return new WaitForSeconds(isGroundedDelay);
         isGrounded = false;
+    }
+
+    private void Stop()
+    {
+        Play = false;
+        rb.bodyType = RigidbodyType2D.Kinematic;
+        rb.velocity = Vector3.zero;
+        frame = 0;
+        inputX = 0;
+        jumpBool = false;
+    }
+
+    public void Reset()
+    {
+        Stop();
+
+        transform.position = StartPosition;
     }
 }
