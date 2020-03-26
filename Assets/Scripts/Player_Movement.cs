@@ -61,11 +61,25 @@ public class Player_Movement : MonoBehaviour
 
         float x = 0;
 
+        float stopSpeedMod;
+        if (isGrounded)
+        {
+            stopSpeedMod = stopSpeed;
+        }
+        else
+        {
+            stopSpeedMod = airStopSpeed;
+        }
+
         //If movement key pressed
         if (Mathf.Abs(inputX) > 0)
         {
+            if (rb.velocity.x < 0 && inputX > 0 || rb.velocity.x > 0 && inputX < 0)
+            {
+                x = inputX * stopSpeedMod;
+            }
             //Limit x (velocity) to walkSpeed
-            if (rb.velocity.x < walkSpeed && inputX > 0 || rb.velocity.x > -walkSpeed && inputX < 0)
+            else if (rb.velocity.x < walkSpeed && inputX > 0 || rb.velocity.x > -walkSpeed && inputX < 0)
             {
                 x = inputX * accellSpeed;
             }
@@ -74,18 +88,8 @@ public class Player_Movement : MonoBehaviour
         else
         {
             //Aim x (velocity) to 0
-            if (Mathf.Abs(rb.velocity.x) >= 0.5f)
+            if (Mathf.Abs(rb.velocity.x) >= 3)
             {
-                float stopSpeedMod;
-                if (isGrounded)
-                {
-                    stopSpeedMod = stopSpeed;
-                }
-                else
-                {
-                    stopSpeedMod = airStopSpeed;
-                }
-
                 if (rb.velocity.x > 0)
                 {
                     x = -stopSpeedMod;
@@ -94,6 +98,10 @@ public class Player_Movement : MonoBehaviour
                 {
                     x = stopSpeedMod;
                 }
+            }
+            else
+            {
+                rb.velocity = new Vector2(0, rb.velocity.y);
             }
         }
 

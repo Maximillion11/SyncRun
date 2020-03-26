@@ -17,7 +17,7 @@ public class ReplayMovement : MonoBehaviour
 
     private Vector3 lastPosition = Vector3.zero;
 
-    private void Start()
+    private void Awake()
     {
         lastPosition = transform.position;
     }

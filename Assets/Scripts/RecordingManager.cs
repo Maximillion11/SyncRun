@@ -9,7 +9,7 @@ public class RecordingManager : MonoBehaviour
 {
     public int LevelNumber = 0;
     public int MaxPlayerNumber = 2;
-    public int ActivePlayerNumber = 0;
+    public int ActivePlayerNumber = -1;
     public bool PlayerIsActive = false;
     public bool RecordedPlayerIsActive = false;
     public float RecordInterval = 0.02f;
@@ -17,7 +17,6 @@ public class RecordingManager : MonoBehaviour
     private string SaveLocation = "";
     private GameObject Player;
     public List<GameObject> RecordedPlayers = new List<GameObject>();
-    private GameObject PlayerIconParent;
     public List<GameObject> PlayerIcons = new List<GameObject>();
 
     private void Awake()
@@ -92,7 +91,7 @@ public class RecordingManager : MonoBehaviour
             CreateRecordedPlayer(i, false);
         }
 
-        DestroyPlayer();
+        DestroyPlayer(true);
     }
 
     private void ResetRecordedPlayers()
@@ -120,7 +119,7 @@ public class RecordingManager : MonoBehaviour
         }
         playerIcon.name = "PlayerIcon" + playerNumber;
         playerIcon.transform.position += new Vector3(24, 0, 0);
-        playerIcon.transform.parent = GameObject.Find("PlayersText").transform;
+        playerIcon.transform.SetParent(GameObject.Find("PlayersText").transform);
 
         if (alreadyRecorded)
         {
@@ -140,7 +139,7 @@ public class RecordingManager : MonoBehaviour
             }
             else
             {
-                if (File.Exists(SaveLocation + "/Level" + LevelNumber + "-" + "Player" + i + ".dat"))
+                if (RecordedPlayers[i] != null)
                 {
                     PlayerIcons[i].GetComponent<Image>().color = Color.green;
                 }
@@ -152,19 +151,31 @@ public class RecordingManager : MonoBehaviour
         }
     }
 
-    public void ActivatePlayer(int playerNumber)
+    public void ActivatePlayer(int buttonClicked)
     {
         StopPlayer();
 
-        ActivePlayerNumber = playerNumber;
+        ActivePlayerNumber += 1;
         PlayerIsActive = true;
 
-        if (ActivePlayerNumber < MaxPlayerNumber)
+        DestroyReliantPlayers(buttonClicked);
+
+        Destroy(RecordedPlayers[ActivePlayerNumber]);
+        CreatePlayer();
+        UpdatePlayerIcons(ActivePlayerNumber);
+        PlayRecordedPlayers();
+    }
+
+    private void DestroyReliantPlayers(int playerNumber)
+    {
+        for (int i = playerNumber; i < RecordedPlayers.Count; i++)
         {
-            Destroy(RecordedPlayers[playerNumber]);
-            CreatePlayer();
-            UpdatePlayerIcons(ActivePlayerNumber);
-            PlayRecordedPlayers();
+            if (RecordedPlayers[i] != null)
+            {
+                Destroy(RecordedPlayers[i]);
+                RecordedPlayers[i] = null;
+                ActivePlayerNumber -= 1;
+            }
         }
     }
 
@@ -172,9 +183,9 @@ public class RecordingManager : MonoBehaviour
     {
         if (PlayerIsActive)
         {
-            Player.GetComponent<RecordMovement>().SaveFile();
-            CreateRecordedPlayer(Player.GetComponent<RecordMovement>().PlayerNumber, true);
-            DestroyPlayer();
+            Player.GetComponent<RecordMovement>().SendData();
+            CreateRecordedPlayer(ActivePlayerNumber, true);
+            DestroyPlayer(false);
             UpdatePlayerIcons(ActivePlayerNumber);
         }
 
@@ -197,11 +208,27 @@ public class RecordingManager : MonoBehaviour
         }
     }
 
-    private void DestroyPlayer()
+    private void DestroyPlayer(bool wipe)
     {
         Destroy(Player);
         Player = null;
         PlayerIsActive = false;
+
+        if (wipe)
+        {
+            ActivePlayerNumber = -1;
+        }
+    }
+
+    public void SaveFile(FrameData injData, int playerNumber)
+    {
+        string destination = SaveLocation + "/Level" + LevelNumber + "-" + "Player" + playerNumber + ".dat";
+        FileStream file;
+
+        file = File.Create(destination);
+        BinaryFormatter bf = new BinaryFormatter();
+        bf.Serialize(file, injData);
+        file.Close();
     }
 
     private void LoadFile(string destination, ReplayMovement rm)
@@ -214,8 +241,8 @@ public class RecordingManager : MonoBehaviour
         FrameData data = (FrameData)bf.Deserialize(file);
         file.Close();
 
-        rm.PositionsX = data.positionsX;
-        rm.PositionsY = data.positionsY;
+        rm.PositionsX = data.PositionsX;
+        rm.PositionsY = data.PositionsY;
     }
 
     private void DeleteFile(string destination)

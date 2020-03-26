@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 public class RecordMovement : MonoBehaviour
 {
@@ -13,15 +11,14 @@ public class RecordMovement : MonoBehaviour
 
     private float timer = 0;
 
-
     private List<float> positionsX = new List<float>();
     private List<float> positionsY = new List<float>();
 
-    private RecordingManager rm;
+    RecordingManager rm;
 
-    private void Awake()
+    private void Start()
     {
-        rm = GameObject.Find("GameManager").transform.GetComponent<RecordingManager>();
+        rm = GameObject.Find("GameManager").GetComponent<RecordingManager>();
     }
 
     private void Update()
@@ -44,16 +41,8 @@ public class RecordMovement : MonoBehaviour
         positionsY.Add(transform.position.y);
     }
 
-    public void SaveFile()
+    public void SendData()
     {
-        string destination = SaveLocation + "/Level" + LevelNumber + "-" + "Player" + PlayerNumber + ".dat";
-        FileStream file;
-
-        file = File.Create(destination);
-
-        FrameData data = new FrameData(positionsX, positionsY);
-        BinaryFormatter bf = new BinaryFormatter();
-        bf.Serialize(file, data);
-        file.Close();
+        rm.SaveFile(new FrameData(positionsX, positionsY), PlayerNumber);
     }
 }

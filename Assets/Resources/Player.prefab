@@ -157,7 +157,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 5
+  m_GravityScale: 4
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
@@ -179,10 +179,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 567
   walkSpeed: 10
-  accellSpeed: 50
-  stopSpeed: 25
-  airStopSpeed: 5
+  accellSpeed: 100
+  stopSpeed: 120
+  airStopSpeed: 80
   jumpForce: 11
+  isGroundedDelay: 0.05
 --- !u!114 &7261205291884775617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198,3 +199,4 @@ MonoBehaviour:
   LevelNumber: 0
   PlayerNumber: 0
   RecordInterval: 0
+  SaveLocation: 

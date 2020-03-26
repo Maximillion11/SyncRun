@@ -311,8 +311,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LevelNumber: 0
-  MaxPlayerNumber: 2
-  ActivePlayerNumber: 0
+  MaxPlayerNumber: 5
+  ActivePlayerNumber: -1
   PlayerIsActive: 0
   RecordedPlayerIsActive: 0
   RecordInterval: 0.03
@@ -529,7 +529,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Restart
+  m_Text: Clear
 --- !u!222 &1077482546
 CanvasRenderer:
   m_ObjectHideFlags: 0
