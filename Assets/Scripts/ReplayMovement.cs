@@ -5,7 +5,6 @@ using UnityEngine;
 public class ReplayMovement : MonoBehaviour
 {
     public bool Play = false;
-    public int LevelNumber = 0;
     public int PlayerNumber = 0;
     public List<float> PositionsX = new List<float>();
     public List<float> PositionsY = new List<float>();

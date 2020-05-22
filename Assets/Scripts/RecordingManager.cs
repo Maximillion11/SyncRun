@@ -4,10 +4,10 @@ using UnityEngine;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class RecordingManager : MonoBehaviour
 {
-    public int LevelNumber = 0;
     public int MaxPlayerNumber = 2;
     public int ActivePlayerNumber = -1;
     public bool PlayerIsActive = false;
@@ -19,8 +19,13 @@ public class RecordingManager : MonoBehaviour
     public List<GameObject> RecordedPlayers = new List<GameObject>();
     public List<GameObject> PlayerIcons = new List<GameObject>();
 
+    public GameObject PlayerSpawns;
+    private int levelNumber = 0;
+
     private void Awake()
     {
+        levelNumber = SceneManager.GetActiveScene().buildIndex;
+
         SaveLocation = Application.persistentDataPath + "/SavedData/";
         Directory.CreateDirectory(SaveLocation);
 
@@ -31,10 +36,11 @@ public class RecordingManager : MonoBehaviour
 
         for (int i = 0; i < MaxPlayerNumber; i++)
         {
-            if (File.Exists(SaveLocation + "/Level" + LevelNumber + "-" + "Player" + i + ".dat"))
+            if (File.Exists(SaveLocation + "/Level" + levelNumber + "-" + "Player" + i + ".dat"))
             {
                 CreatePlayerIcons(i, true);
                 CreateRecordedPlayer(i, true);
+                ActivePlayerNumber++;
             }
             else
             {
@@ -46,9 +52,10 @@ public class RecordingManager : MonoBehaviour
 
     private void CreatePlayer()
     {
-        Player = (GameObject)GameObject.Instantiate(Resources.Load("Player"), new Vector2(-5.6f, -0.51f), Quaternion.identity);
+        Transform spawn = PlayerSpawns.transform.GetChild(ActivePlayerNumber);
+
+        Player = (GameObject)GameObject.Instantiate(Resources.Load("Player"), spawn.position, Quaternion.identity);
         Player.name = "Player";
-        Player.GetComponent<RecordMovement>().LevelNumber = LevelNumber;
         Player.GetComponent<RecordMovement>().PlayerNumber = ActivePlayerNumber;
         Player.GetComponent<RecordMovement>().RecordInterval = RecordInterval;
         Player.GetComponent<RecordMovement>().SaveLocation = SaveLocation;
@@ -58,13 +65,17 @@ public class RecordingManager : MonoBehaviour
     {
         if (isRecorded)
         {
-            GameObject playerRecorded = (GameObject)GameObject.Instantiate(Resources.Load("PlayerRecorded"), new Vector2(-5.6f, -0.51f), Quaternion.identity);
+            FrameData data = LoadFile(SaveLocation + "/Level" + levelNumber + "-" + "Player" + playerNumber + ".dat");
+
+            Vector2 spawnLocation = new Vector2(data.PositionsX[0], data.PositionsY[0]);
+
+            GameObject playerRecorded = (GameObject)GameObject.Instantiate(Resources.Load("PlayerRecorded"), spawnLocation, Quaternion.identity);
             playerRecorded.name = "PlayerRecorded" + playerNumber;
-            playerRecorded.GetComponent<ReplayMovement>().LevelNumber = LevelNumber;
             playerRecorded.GetComponent<ReplayMovement>().PlayerNumber = playerNumber;
             playerRecorded.GetComponent<ReplayMovement>().RecordInterval = RecordInterval;
 
-            LoadFile(SaveLocation + "/Level" + LevelNumber + "-" + "Player" + playerNumber + ".dat", playerRecorded.GetComponent<ReplayMovement>());
+            playerRecorded.GetComponent<ReplayMovement>().PositionsX = data.PositionsX;
+            playerRecorded.GetComponent<ReplayMovement>().PositionsY = data.PositionsY;
 
             RecordedPlayers[playerNumber] = playerRecorded;
         }
@@ -87,7 +98,7 @@ public class RecordingManager : MonoBehaviour
         for (int i = 0; i < MaxPlayerNumber; i++)
         {
             PlayerIcons[i].GetComponent<Image>().color = Color.red;
-            DeleteFile(SaveLocation + "/Level" + LevelNumber + "-" + "Player" + i + ".dat");
+            DeleteFile(SaveLocation + "/Level" + levelNumber + "-" + "Player" + i + ".dat");
             CreateRecordedPlayer(i, false);
         }
 
@@ -123,7 +134,7 @@ public class RecordingManager : MonoBehaviour
 
         if (alreadyRecorded)
         {
-            playerIcon.GetComponent<Image>().color = Color.green;
+            playerIcon.GetComponent<Image>().color = Color.white;
         }
 
         PlayerIcons.Add(playerIcon);
@@ -135,13 +146,13 @@ public class RecordingManager : MonoBehaviour
         {
             if (PlayerIsActive && i == playerNumber)
             {
-                PlayerIcons[i].GetComponent<Image>().color = Color.white;
+                PlayerIcons[i].GetComponent<Image>().color = Color.green;
             }
             else
             {
                 if (RecordedPlayers[i] != null)
                 {
-                    PlayerIcons[i].GetComponent<Image>().color = Color.green;
+                    PlayerIcons[i].GetComponent<Image>().color = Color.white;
                 }
                 else
                 {
@@ -222,7 +233,7 @@ public class RecordingManager : MonoBehaviour
 
     public void SaveFile(FrameData injData, int playerNumber)
     {
-        string destination = SaveLocation + "/Level" + LevelNumber + "-" + "Player" + playerNumber + ".dat";
+        string destination = SaveLocation + "/Level" + levelNumber + "-" + "Player" + playerNumber + ".dat";
         FileStream file;
 
         file = File.Create(destination);
@@ -231,7 +242,7 @@ public class RecordingManager : MonoBehaviour
         file.Close();
     }
 
-    private void LoadFile(string destination, ReplayMovement rm)
+    private FrameData LoadFile(string destination)
     {
         FileStream file;
         
@@ -241,8 +252,7 @@ public class RecordingManager : MonoBehaviour
         FrameData data = (FrameData)bf.Deserialize(file);
         file.Close();
 
-        rm.PositionsX = data.PositionsX;
-        rm.PositionsY = data.PositionsY;
+        return data;
     }
 
     private void DeleteFile(string destination)
@@ -251,5 +261,22 @@ public class RecordingManager : MonoBehaviour
         {
             File.Delete(destination);
         }
+    }
+
+    public void FinishLevel()
+    {
+        StopPlayer();
+
+        int nextSceneID = levelNumber + 1;
+
+        if (nextSceneID < SceneManager.sceneCountInBuildSettings)
+        {
+            SceneManager.LoadScene(nextSceneID);
+        }
+        else
+        {
+            SceneManager.LoadScene("Level0");
+        }
+
     }
 }

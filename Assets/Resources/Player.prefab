@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5686725941572802562}
   m_Layer: 8
   m_Name: Player_Sprite
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -72,7 +72,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: b667ac15cf49fd24aa1c0dab65af68f3, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 7261205291884775617}
   m_Layer: 8
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -196,7 +196,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bcc10087f0bf214e9a61d3e5cb6af7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LevelNumber: 0
   PlayerNumber: 0
   RecordInterval: 0
   SaveLocation: 

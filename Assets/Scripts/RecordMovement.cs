@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class RecordMovement : MonoBehaviour
 {
-    public int LevelNumber = 0;
     public int PlayerNumber = 0;
     public float RecordInterval = 0f;
     public string SaveLocation = "";

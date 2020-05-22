@@ -39,10 +39,10 @@ public class Player_Movement : MonoBehaviour
         CheckGrounded();
         if (groundedParent != transform.parent)
         {
-            if (transform.parent != null && transform.parent.GetComponent<ReplayMovement>() != null)
-            {
-                rb.velocity += transform.parent.GetComponent<ReplayMovement>().kinematicVelocity;
-            }
+            //if (transform.parent != null && transform.parent.GetComponent<ReplayMovement>() != null)
+            //{
+            //    rb.velocity += transform.parent.GetComponent<ReplayMovement>().kinematicVelocity;
+            //}
         }
         transform.parent = groundedParent;
 
